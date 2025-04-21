@@ -44,3 +44,7 @@ class formataCSV:
             string = unicodedata.normalize('NFD', string)
             string = ''.join(c for c in string if unicodedata.category(c) != 'Mn')  # Remove acentos
         return string
+
+    def concatena_df(self,df_ap: DataFrame, df_ac: DataFrame):
+        df = pd.concat([df_ap,df_ac], ignore_index=True)
+        return df
