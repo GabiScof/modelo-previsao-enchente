@@ -4,9 +4,17 @@ from pandas import DataFrame
 class formataCSVClima:
 
     def separa_coluna_dia_mes_ano(self,df:DataFrame):
+        df.reset_index(drop=True, inplace=True)
         nome_primeira_coluna = df.columns[0]
+        df[nome_primeira_coluna] = df[nome_primeira_coluna].astype(str).str.strip()
 
         df['data'] = pd.to_datetime(df[nome_primeira_coluna], format='%Y-%m-%d', errors='coerce')
+        max_tentativas = 5
+        tentativa = 0
+        while df['data'].isna().any() and tentativa<=max_tentativas:
+            print(f"Tentativa número {tentativa}")
+            df['data'] = pd.to_datetime(df[nome_primeira_coluna], errors='coerce')
+            tentativa +=1
         df['ano'] = df['data'].dt.year
         df['mes'] = df['data'].dt.month
         df['dia'] = df['data'].dt.day

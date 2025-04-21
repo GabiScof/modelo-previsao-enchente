@@ -2,6 +2,8 @@ import os
 import zipfile
 import shutil
 import pandas as pd
+from src.helpers.formata_csv_clima import formataCSVClima
+
 
 class extracaoCSV():
 
@@ -67,9 +69,23 @@ class extracaoCSV():
                             print(f"Erro ao processar {nome_arquivo}: {e}")
 
             if dataframes:
+                classe = formataCSVClima()
                 df_concatenado = pd.concat(dataframes, ignore_index=True)
                 output_path = os.path.join(output_folder, f'dados-clima-{ano}.csv')
+
+                #Pré-processamento
+                if 'RADIACAO GLOBAL (Kj/m²)' in df_concatenado.columns:
+                    df_concatenado.rename(columns={'RADIACAO GLOBAL (Kj/m²)': 'RADIACAO GLOBAL (KJ/m²)'}, inplace=True)
+
+                colunas_para_formatar = ['PRECIPITAÇÃO TOTAL, HORÁRIO (mm)', 'PRESSAO ATMOSFERICA AO NIVEL DA ESTACAO, HORARIA (mB)', 'PRESSÃO ATMOSFERICA MAX.NA HORA ANT. (AUT) (mB)', 'PRESSÃO ATMOSFERICA MIN. NA HORA ANT. (AUT) (mB)', 'RADIACAO GLOBAL (KJ/m²)', 'TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)', 'TEMPERATURA DO PONTO DE ORVALHO (°C)', 'TEMPERATURA MÁXIMA NA HORA ANT. (AUT) (°C)', 'TEMPERATURA MÍNIMA NA HORA ANT. (AUT) (°C)', 'TEMPERATURA ORVALHO MAX. NA HORA ANT. (AUT) (°C)', 'TEMPERATURA ORVALHO MIN. NA HORA ANT. (AUT) (°C)', 'UMIDADE REL. MAX. NA HORA ANT. (AUT) (%)', 'UMIDADE REL. MIN. NA HORA ANT. (AUT) (%)', 'UMIDADE RELATIVA DO AR, HORARIA (%)', 'VENTO, DIREÇÃO HORARIA (gr) (° (gr))', 'VENTO, RAJADA MAXIMA (m/s)', 'VENTO, VELOCIDADE HORARIA (m/s)']
+                for coluna in colunas_para_formatar:
+                    df_concatenado = classe.remover_valores_invalidos(df=df_concatenado, coluna=coluna)
+
+                df_concatenado = classe.separa_coluna_dia_mes_ano(df=df_concatenado)
+                df_concatenado = classe.transforma_numerico(df=df_concatenado, colunas_numericas=colunas_para_formatar)
+                df_concatenado = classe.agrupa_por_mes(df=df_concatenado)
                 df_concatenado.to_csv(output_path, index=False, sep=';')
+                print(f"Dataframe concatenado!")
             else:
                 print(f"Nenhum dado válido encontrado para {ano}.")
 
