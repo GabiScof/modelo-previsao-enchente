@@ -35,3 +35,17 @@ Associa o código de uma estação pluviométrica a seu respectivo município.
 
 Para ver como os dados foram extraídos, consulte o github : 🔗 (https://github.com/GabiScof/modelo-previsao-enchentes)
 <br><br>
+
+4. **Dados de clima associados por municipio**
+
+Representa dados climáticos dado um município e uma data.
+
+Os dados são um conjunto de zips que vão do ano 2000 a 2025.
+
+⚠️ Esses zips não puderam ser inseridos no repositório devido ao tamanho excessivo. Eles devem ser colocados na pasta:
+- `data/brutos/clima`
+
+**FONTE**: 🔗 [INMET](https://portal.inmet.gov.br/dadoshistoricos)
+
+Para ver como os dados foram extraídos, basta acessar a função `extracao_csv.py` na pasta `src/common` nesse repositório.
+<br><br>   
