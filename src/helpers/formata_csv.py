@@ -1,4 +1,5 @@
 import pandas as pd
+import unicodedata
 from pandas import DataFrame
 
 class formataCSV:
@@ -27,13 +28,19 @@ class formataCSV:
         )
         return df
 
-if __name__ == "__main__":
-    classe = formataCSV()
-    df = pd.read_csv('../../data/brutos/dados-pluviometricos-AP.csv')
-    df = classe.separa_coluna_data(df=df)
-    df = classe.agrupa_por_mes(df=df)
-    df.to_csv('../../data/formatados/dados-pluviometricos-AP.csv', index=False)
+    def agrupa_csv(self,df_pluviometria:DataFrame, df_desmatamento: DataFrame):
 
-    df_municipios = pd.read_csv('../../data/brutos/estacao-pluviometrica-municipio.csv')
-    df = classe.merge_codigo_municipio(df_codigos=df, df_municipios=df_municipios)
-    print(df)
+        df = pd.merge(
+            df_pluviometria,
+            df_desmatamento,
+            on=['ano', 'municipio'],
+            how='left'
+        )
+        return df
+
+    def formata_string(self, string: str):
+        if isinstance(string, str):
+            string = str(string).strip().lower()
+            string = unicodedata.normalize('NFD', string)
+            string = ''.join(c for c in string if unicodedata.category(c) != 'Mn')  # Remove acentos
+        return string
