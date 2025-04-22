@@ -18,15 +18,7 @@ Representam a quantidade de chuva registrada por dia e mês em municípios dos r
 Para ver como os dados foram extraídos, consulte o github : 🔗 (https://github.com/GabiScof/modelo-previsao-enchentes)
 <br><br>
 
-2. **Dados de desmatamento por município e estado** 
-
-Representam a quantidade área desmatada por mês em municípios dos respectivos estados entre os anos 2007 e 2024.
-- `desmatamento_por_municipio.csv`
-
-**FONTE**: 🔗 [Terra Brasilis](https://terrabrasilis.dpi.inpe.br/app/dashboard/deforestation/biomes/legal_amazon/increments)
-<br><br>
-
-3. **Dados de códigos de estação associados a município** 
+2. **Dados de códigos de estação pluviométrica associada ao município** 
 
 Associa o código de uma estação pluviométrica a seu respectivo município.
 - `estacao-pluviometrica-municipio.csv`
@@ -36,7 +28,25 @@ Associa o código de uma estação pluviométrica a seu respectivo município.
 Para ver como os dados foram extraídos, consulte o github : 🔗 (https://github.com/GabiScof/modelo-previsao-enchentes)
 <br><br>
 
-4. **Dados de clima associados por municipio**
+3. **Dados de códigos de estação de vazão associados a município** 
+
+Associa o código de uma estação de vazão a seu respectivo município.
+- `estacao-vazao-municipio.csv`
+
+**FONTE**: API Hidro Webservice do ANA 
+
+Para ver como os dados foram extraídos, consulte o github : 🔗 (https://github.com/GabiScof/modelo-previsao-enchentes)
+<br><br>
+
+4. **Dados de desmatamento por município e estado** 
+
+Representam a quantidade área desmatada por mês em municípios dos respectivos estados entre os anos 2007 e 2024.
+- `desmatamento_por_municipio.csv`
+
+**FONTE**: 🔗 [Terra Brasilis](https://terrabrasilis.dpi.inpe.br/app/dashboard/deforestation/biomes/legal_amazon/increments)
+<br><br>
+
+5. **Dados de clima associados por municipio**
 
 Representa dados climáticos dado um município e uma data.
 
