@@ -27,8 +27,8 @@ class formataCSV:
 
         return df
 
-    def agrupa_por_mes(self,df:DataFrame):
-        df = df.groupby(['ano', 'mes', 'estacao'], as_index=False)['chuva'].mean()
+    def agrupa_por_mes(self,df:DataFrame, coluna: str):
+        df = df.groupby(['ano', 'mes', 'estacao'], as_index=False)[coluna].mean()
         return df
 
     def merge_codigo_municipio(self,df_codigos:DataFrame, df_municipios: DataFrame):
@@ -41,13 +41,13 @@ class formataCSV:
         )
         return df
 
-    def agrupa_csv(self,df_pluviometria:DataFrame, df_desmatamento: DataFrame, condicoes: list):
+    def agrupa_csv(self,df_pluviometria:DataFrame, df_desmatamento: DataFrame, condicoes: list, modo: str):
 
         df = pd.merge(
             df_pluviometria,
             df_desmatamento,
             on= condicoes,
-            how='left'
+            how= modo
         )
         return df
 
@@ -58,8 +58,8 @@ class formataCSV:
             string = ''.join(c for c in string if unicodedata.category(c) != 'Mn')  # Remove acentos
         return string
 
-    def concatena_df(self,df_ap: DataFrame, df_ac: DataFrame):
-        df = pd.concat([df_ap,df_ac], ignore_index=True)
+    def concatena_df(self,lista_dfs: list):
+        df = pd.concat(lista_dfs, ignore_index=True)
         return df
 
     def limpar_nome_coluna(self, col: str):
