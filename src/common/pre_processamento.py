@@ -9,23 +9,53 @@ if __name__ == "__main__":
     # Leitura dos dataframe de pluviometria, municipio e desmatamento
     df_ap = pd.read_csv('../../data/brutos/dados-pluviometricos-AP.csv')
     df_ac = pd.read_csv('../../data/brutos/dados-pluviometricos-AC.csv')
+    df_ma = pd.read_csv('../../data/brutos/dados-pluviometricos-MA.csv')
+    df_ro = pd.read_csv('../../data/brutos/dados-pluviometricos-RO.csv')
+    df_rr = pd.read_csv('../../data/brutos/dados-pluviometricos-RR.csv')
+    df_vazao_ac = pd.read_csv('../../data/brutos/dados-vazao-AC.csv')
+    df_vazao_am = pd.read_csv('../../data/brutos/dados-vazao-AM.csv')
+    df_vazao_ap = pd.read_csv('../../data/brutos/dados-vazao-AP.csv')
+    df_vazao_ma = pd.read_csv('../../data/brutos/dados-vazao-MA.csv')
+    df_vazao_mt = pd.read_csv('../../data/brutos/dados-vazao-MT.csv')
+    df_vazao_pa = pd.read_csv('../../data/brutos/dados-vazao-PA.csv')
+    df_vazao_ro = pd.read_csv('../../data/brutos/dados-vazao-RO.csv')
+    df_vazao_rr = pd.read_csv('../../data/brutos/dados-vazao-RR.csv')
+    df_vazao_to = pd.read_csv('../../data/brutos/dados-vazao-TO.csv')
     df_municipios = pd.read_csv('../../data/brutos/estacao-pluviometrica-municipio.csv')
+    df_municipios_vazao = pd.read_csv('../../data/brutos/estacao-vazao-municipio.csv')
     df_desmatamento= pd.read_csv('../../data/brutos/desmatamento_por_municipio.csv')
     df_clima = pd.read_csv('../../data/extracao/dados-clima-final.csv', encoding='latin1', sep=';', engine='python')
 
+    # DADOS DE PLUVIOMETRIA -----------------------------------------------------------------------------------
     # Criação do dataframe de pluviometria com todos os estados
-    df_pluviometria = classe.concatena_df(df_ap=df_ap, df_ac=df_ac)
+    lista_dfs = [df_ap,df_ac, df_ma, df_ro,df_rr]
+    df_pluviometria = classe.concatena_df(lista_dfs=lista_dfs)
 
     # Pré-processamento de colunas
     df_pluviometria = classe.separa_coluna_data(df=df_pluviometria)
-    df_pluviometria = classe.agrupa_por_mes(df=df_pluviometria)
+    df_pluviometria = classe.agrupa_por_mes(df=df_pluviometria, coluna='chuva')
 
     # Agrupamento dos dataframes de código de município e nome de município
     df_pluviometria = classe.merge_codigo_municipio(df_codigos=df_pluviometria, df_municipios=df_municipios)
 
+    # DADOS DE VAZÃO -----------------------------------------------------------------------------------
+    # Criação do dataframe de pluviometria com todos os estados
+    lista_dfs_vazao = [df_vazao_am,df_vazao_ac,df_vazao_mt,df_vazao_ap,df_vazao_ma,df_vazao_ro,df_vazao_rr,df_vazao_pa,df_vazao_to]
+    df_vazao = classe.concatena_df(lista_dfs=lista_dfs_vazao)
+
+    # Pré-processamento de colunas
+    df_vazao = classe.separa_coluna_data(df=df_vazao)
+    df_vazao = classe.agrupa_por_mes(df=df_vazao, coluna='vazao')
+
+    # Agrupamento dos dataframes de código de município e nome de município
+    df_vazao = classe.merge_codigo_municipio(df_codigos=df_vazao, df_municipios=df_municipios_vazao)
+
+    # TODOS OS DATAFRAMES -----------------------------------------------------------------------------------
     # Pré-processamento de strings
     df_pluviometria['municipio'] = df_pluviometria['municipio'].apply(classe.formata_string)
     df_desmatamento['municipality'] = df_desmatamento['municipality'].apply(classe.formata_string)
+    df_vazao['municipio'] = df_vazao['municipio'].apply(classe.formata_string)
+    df_clima['municipio'] = df_clima['municipio'].apply(classe.formata_string)
 
     # Seleção das colunas do df de desmatamento
     df_desmatamento = df_desmatamento[['year', 'areakm', 'municipality']]
@@ -34,10 +64,8 @@ if __name__ == "__main__":
     df_desmatamento.rename(columns={'year': 'ano', 'municipality': 'municipio'}, inplace=True)
 
     # Agrupamento dos dataframes de pluviometria e desmatamento
-    df_desma_pluvio = classe.agrupa_csv(df_pluviometria=df_pluviometria, df_desmatamento=df_desmatamento, condicoes=['ano', 'municipio'])
-
-    # Inclusão de dados de clima
-    df_clima['municipio'] = df_clima['municipio'].apply(classe.formata_string)
+    df_desma_pluvio = classe.agrupa_csv(df_pluviometria=df_pluviometria, df_desmatamento=df_desmatamento, condicoes=['ano', 'municipio'], modo = 'left')
+    df_desma_pluvio_vazao = classe.agrupa_csv(df_pluviometria=df_desma_pluvio, df_desmatamento=df_vazao, condicoes=['ano', 'mes', 'municipio'], modo = 'outer')
 
     # Renomeação das colunas
     df_clima.columns = [classe.limpar_nome_coluna(c) for c in df_clima.columns]
@@ -70,9 +98,15 @@ if __name__ == "__main__":
     df_clima = df_clima.drop(columns = ['Unnamed: 19'])
 
     # Agrupamento dos dataframes de pluviometria-desmatamento e clima
-    df_desma_pluvio_clima = classe.agrupa_csv(df_pluviometria=df_desma_pluvio, df_desmatamento=df_clima, condicoes=['ano', 'mes', 'municipio'])
+    df_desma_pluvio_vazao_clima = classe.agrupa_csv(df_pluviometria=df_desma_pluvio_vazao, df_desmatamento=df_clima, condicoes=['ano', 'mes', 'municipio'], modo='left')
+    df_desma_pluvio_vazao_clima['chuva_final'] = df_desma_pluvio_vazao_clima['precipitacao_total_mm'].combine_first(df_desma_pluvio_vazao_clima['chuva'])
+
+    # Retirar colunas desnecessárias
+    df_desma_pluvio_vazao_clima = df_desma_pluvio_vazao_clima.drop(columns = ['uf_y', 'estacao_y', 'codigo_estacao_y', 'estado', 'estacao_x', 'codigo_estacao_x', 'chuva', 'precipitacao_total_mm'])
+    df_desma_pluvio_vazao_clima.rename(columns={'uf_x': 'uf'})
+
 
     # Exportação dos csv de pluviometria e desmatamento
     df_pluviometria.to_csv('../../data/formatados/dados-pluviometricos.csv', index=False)
     df_desma_pluvio.to_csv('../../data/formatados/dados-pluviometricos-desmatamento.csv', index=False)
-    df_desma_pluvio_clima.to_csv('../../data/formatados/dados-pluviometricos-desmatamento-clima.csv', index=False)
+    df_desma_pluvio_vazao_clima.to_csv('../../data/formatados/dados-pluviometricos-vazao-desmatamento-clima.csv', index=False)
