@@ -1,10 +1,13 @@
 import pandas as pd
 
 from src.helpers.formata_csv import formataCSV
+from src.helpers.desmatamento import Desmatamento
 from src.helpers.formata_csv_clima import formataCSVClima
+
 
 if __name__ == "__main__":
     classe = formataCSV()
+    desmatamento = Desmatamento()
 
     # Leitura dos dataframe de pluviometria, municipio e desmatamento
     df_ap = pd.read_csv('../../data/brutos/dados-pluviometricos-AP.csv')
@@ -24,7 +27,11 @@ if __name__ == "__main__":
     df_municipios = pd.read_csv('../../data/brutos/estacao-pluviometrica-municipio.csv')
     df_municipios_vazao = pd.read_csv('../../data/brutos/estacao-vazao-municipio.csv')
     df_desmatamento= pd.read_csv('../../data/brutos/desmatamento_por_municipio.csv')
+    df_desmatamento_datazoom= pd.read_csv('../../data/brutos/mapbiomas_muni_deforestation_regeneration.csv',  sep=';')
     df_clima = pd.read_csv('../../data/extracao/dados-clima-final.csv', encoding='latin1', sep=';', engine='python')
+
+    #df_desmatamento_datazoom = df_desmatamento_datazoom[['municipio','uf','cod_municipio','ano','valor','classe_desmatamento']]
+    #df_desmatamento_datazoom = df_desmatamento_datazoom[df_desmatamento_datazoom['classe_desmatamento'].str.contains('Supressao')]
 
     # DADOS DE PLUVIOMETRIA -----------------------------------------------------------------------------------
     # Criação do dataframe de pluviometria com todos os estados
@@ -54,18 +61,32 @@ if __name__ == "__main__":
     # Pré-processamento de strings
     df_pluviometria['municipio'] = df_pluviometria['municipio'].apply(classe.formata_string)
     df_desmatamento['municipality'] = df_desmatamento['municipality'].apply(classe.formata_string)
+    #df_desmatamento_datazoom['municipio'] = df_desmatamento_datazoom['municipio'].astype(str)
     df_vazao['municipio'] = df_vazao['municipio'].apply(classe.formata_string)
     df_clima['municipio'] = df_clima['municipio'].apply(classe.formata_string)
 
     # Seleção das colunas do df de desmatamento
     df_desmatamento = df_desmatamento[['year', 'areakm', 'municipality']]
+    df_desmatamento_datazoom = df_desmatamento_datazoom[['municipio','uf','cod_municipio','ano','valor','classe_desmatamento']]
 
     # Renomeação das colunas do df de desmatamento
     df_desmatamento.rename(columns={'year': 'ano', 'municipality': 'municipio'}, inplace=True)
 
-    # Agrupamento dos dataframes de pluviometria e desmatamento
+    # Calculo de desmatamento do dataframe do datazoom
+    df_desmatamento_datazoom = df_desmatamento_datazoom[df_desmatamento_datazoom['classe_desmatamento'].str.contains('Supressao')]
+    df_desmatamento_datazoom = df_desmatamento_datazoom[df_desmatamento_datazoom['ano'] >= 1991]
+    df_desmatamento_datazoom['municipio'] = df_desmatamento_datazoom['municipio'].apply(classe.formata_string)
+    df_desmatamento_datazoom['valor'] = df_desmatamento_datazoom['valor'].astype(str).str.replace(',', '.').astype(float)
+    df_desmatamento_datazoom = df_desmatamento_datazoom.groupby(['ano', 'municipio'])['valor'].sum().reset_index()
+    df_desmatamento_datazoom['valor'] = df_desmatamento_datazoom['valor'] / 100
+
+    # Agrupamento dos dataframes de pluviometria, desmatamento e vazão
     df_desma_pluvio = classe.agrupa_csv(df_pluviometria=df_pluviometria, df_desmatamento=df_desmatamento, condicoes=['ano', 'municipio'], modo = 'left')
+    df_desma_pluvio = classe.agrupa_csv(df_pluviometria=df_desma_pluvio, df_desmatamento=df_desmatamento_datazoom, condicoes=['ano', 'municipio'], modo = 'left')
     df_desma_pluvio_vazao = classe.agrupa_csv(df_pluviometria=df_desma_pluvio, df_desmatamento=df_vazao, condicoes=['ano', 'mes', 'municipio'], modo = 'outer')
+
+    # Preenchimento dos valores de desmatamento nan do dataframe destamamento com o dataframe desmatamento do datazoom
+    df_desma_pluvio_vazao['areakm'] = df_desma_pluvio_vazao['areakm'].fillna(df_desma_pluvio_vazao['valor'])
 
     # Renomeação das colunas
     df_clima.columns = [classe.limpar_nome_coluna(c) for c in df_clima.columns]
@@ -102,7 +123,7 @@ if __name__ == "__main__":
     df_desma_pluvio_vazao_clima['chuva_final'] = df_desma_pluvio_vazao_clima['precipitacao_total_mm'].combine_first(df_desma_pluvio_vazao_clima['chuva'])
 
     # Retirar colunas desnecessárias
-    df_desma_pluvio_vazao_clima = df_desma_pluvio_vazao_clima.drop(columns = ['uf_y', 'estacao_y', 'codigo_estacao_y', 'estado', 'estacao_x', 'codigo_estacao_x', 'chuva', 'precipitacao_total_mm'])
+    df_desma_pluvio_vazao_clima = df_desma_pluvio_vazao_clima.drop(columns = ['estacao_y', 'codigo_estacao_y', 'estacao_x', 'codigo_estacao_x', 'chuva', 'precipitacao_total_mm'])
     df_desma_pluvio_vazao_clima.rename(columns={'uf_x': 'uf'})
 
 
