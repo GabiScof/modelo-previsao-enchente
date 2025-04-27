@@ -1,13 +1,10 @@
 import pandas as pd
 
 from src.helpers.formata_csv import formataCSV
-from src.helpers.desmatamento import Desmatamento
-from src.helpers.formata_csv_clima import formataCSVClima
 
 
 if __name__ == "__main__":
     classe = formataCSV()
-    desmatamento = Desmatamento()
 
     # Leitura dos dataframe de pluviometria, municipio e desmatamento
     df_ap = pd.read_csv('../../data/brutos/dados-pluviometricos-AP.csv')
@@ -29,9 +26,6 @@ if __name__ == "__main__":
     df_desmatamento= pd.read_csv('../../data/brutos/desmatamento_por_municipio.csv')
     df_desmatamento_datazoom= pd.read_csv('../../data/brutos/mapbiomas_muni_deforestation_regeneration.csv',  sep=';')
     df_clima = pd.read_csv('../../data/extracao/dados-clima-final.csv', encoding='latin1', sep=';', engine='python')
-
-    #df_desmatamento_datazoom = df_desmatamento_datazoom[['municipio','uf','cod_municipio','ano','valor','classe_desmatamento']]
-    #df_desmatamento_datazoom = df_desmatamento_datazoom[df_desmatamento_datazoom['classe_desmatamento'].str.contains('Supressao')]
 
     # DADOS DE PLUVIOMETRIA -----------------------------------------------------------------------------------
     # Criação do dataframe de pluviometria com todos os estados
@@ -61,7 +55,6 @@ if __name__ == "__main__":
     # Pré-processamento de strings
     df_pluviometria['municipio'] = df_pluviometria['municipio'].apply(classe.formata_string)
     df_desmatamento['municipality'] = df_desmatamento['municipality'].apply(classe.formata_string)
-    #df_desmatamento_datazoom['municipio'] = df_desmatamento_datazoom['municipio'].astype(str)
     df_vazao['municipio'] = df_vazao['municipio'].apply(classe.formata_string)
     df_clima['municipio'] = df_clima['municipio'].apply(classe.formata_string)
 
@@ -125,7 +118,6 @@ if __name__ == "__main__":
     # Retirar colunas desnecessárias
     df_desma_pluvio_vazao_clima = df_desma_pluvio_vazao_clima.drop(columns = ['estacao_y', 'codigo_estacao_y', 'estacao_x', 'codigo_estacao_x', 'chuva', 'precipitacao_total_mm'])
     df_desma_pluvio_vazao_clima.rename(columns={'uf_x': 'uf'})
-
 
     # Exportação dos csv de pluviometria e desmatamento
     df_pluviometria.to_csv('../../data/formatados/dados-pluviometricos.csv', index=False)
