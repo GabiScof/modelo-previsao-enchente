@@ -42,7 +42,7 @@ plt.title('Correlação entre Chuva e Vazão')
 plt.xlabel('Chuva (mm)')
 plt.ylabel('Vazão (m³/s)')
 plt.grid(True)
-plt.savefig('figuras/correlacao_chuva_vazao.png', dpi=300, bbox_inches='tight')
+plt.savefig('../../data/analise-dados/correlacao_chuva_vazao.png', dpi=300, bbox_inches='tight')
 plt.show()
 
 
@@ -58,6 +58,7 @@ plt.xlabel('Mês')
 plt.ylabel('Chuva Média (mm)')
 plt.xticks(range(1,13))
 plt.grid(axis='y')
+plt.savefig('../../data/analise-dados/chuva-media-mes.png', dpi=300, bbox_inches='tight')
 plt.show()
 
 # (4) Chuva média mensal ao longo do ano (todos os municípios juntos)
@@ -70,25 +71,10 @@ plt.xlabel('Mês')
 plt.ylabel('Vazão Média (mm)')
 plt.xticks(range(1,13))
 plt.grid(axis='y')
+plt.savefig('../../data/analise-dados/vazao-media-mes.png', dpi=300, bbox_inches='tight')
 plt.show()
 
 # ----------------------------------------------------
-
-# Agrupar por mês
-df_mes = df.groupby('mes').agg({
-    'chuva_final': 'mean',
-    'vazao': 'mean'
-}).reset_index()
-
-plt.figure(figsize=(10, 5))
-plt.plot(df_mes['mes'], df_mes['chuva_final'], marker='o', label='Chuva Média')
-plt.plot(df_mes['mes'], df_mes['vazao'], marker='s', label='Vazão Média')
-plt.title('Chuva e Vazão Médias por Mês')
-plt.xlabel('Mês')
-plt.ylabel('Médias')
-plt.legend()
-plt.grid(True)
-plt.show()
 
 # Criar lag de chuva (chuva de mês anterior)
 df = df.sort_values(['municipio', 'ano', 'mes']).copy()
@@ -114,6 +100,7 @@ for municipio in municipios_exemplo:
     plt.xlabel('Chuva do Mês Anterior (mm)')
     plt.ylabel('Vazão (m³/s)')
     plt.grid(True)
+    plt.savefig(f'../../data/analise-dados/correlacao-vazao-chuva-{municipio}.png', dpi=300, bbox_inches='tight')
     plt.show()
 
 #Calcular correlação Spearman (em todos os dados tratados)
@@ -130,6 +117,7 @@ print(f"Correlação de Spearman (tendência): {corr_spearman:.4f}")
 corr_matrix = df_corr[['chuva_lag1', 'vazao']].corr(method='spearman')
 sns.heatmap(corr_matrix, annot=True, cmap='coolwarm')
 plt.title('Matriz de Correlação - Método Spearman')
+plt.savefig(f'../../data/analise-dados/matriz-correlacao.png', dpi=300, bbox_inches='tight')
 plt.show()
 
 
@@ -155,19 +143,17 @@ df_corr_municipios = pd.DataFrame(resultados)
 # Ordenar pelo valor da correlação
 df_corr_municipios = df_corr_municipios.sort_values(by='correlacao_spearman', ascending=False)
 
-# Mostrar os 10 melhores municípios
-print(df_corr_municipios.head(10))
-
 plt.figure(figsize=(10, 6))
 plt.barh(df_corr_municipios['municipio'].head(10), df_corr_municipios['correlacao_spearman'].head(10))
 plt.xlabel('Correlação de Spearman')
 plt.title('Top 10 Municípios - Correlação Chuva (Lag 1) vs Vazão')
 plt.gca().invert_yaxis()
 plt.grid(True)
+plt.savefig(f'../../data/analise-dados/correlacao-por-municipios.png', dpi=300, bbox_inches='tight')
 plt.show()
 
 # Criar o DataFrame
 df_corr_municipios = pd.DataFrame(resultados)
 df_corr_municipios = df_corr_municipios.sort_values(by='correlacao_spearman', ascending=False).reset_index(drop=True)
 df_corr_municipios.columns = ['Município', 'Correlação de Spearman']
-df_corr_municipios.to_csv('correlacao_municipios.csv', index=False)
+df_corr_municipios.to_csv('../../data/analise-dados/correlacao_municipios.csv', index=False)
