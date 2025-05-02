@@ -15,7 +15,7 @@ class extracaoCSV():
         output_folder = '../../data/extracao/anual/'
         os.makedirs(output_folder, exist_ok=True)
 
-        for ano in range(2000, 2024):
+        for ano in range(2000, 2026):
             zip_name = f"{ano}.zip"
             zip_path = os.path.join(zip_folder, zip_name)
 
@@ -83,7 +83,7 @@ class extracaoCSV():
 
                 df_concatenado = classe.separa_coluna_dia_mes_ano(df=df_concatenado)
                 df_concatenado = classe.transforma_numerico(df=df_concatenado, colunas_numericas=colunas_para_formatar)
-                df_concatenado = classe.agrupa_por_mes(df=df_concatenado)
+                df_concatenado = classe.agrupa_por_dia(df=df_concatenado)
                 df_concatenado.to_csv(output_path, index=False, sep=';')
                 print(f"Dataframe concatenado!")
             else:
@@ -104,8 +104,9 @@ class extracaoCSV():
                     print(f"Erro ao ler {arquivo}: {e}")
 
         if dataframes:
+            print(f"Iniciando concatenação dos arquivos")
             df_final = pd.concat(dataframes, ignore_index=True)
-            output_path_final = '../../data/extracao/dados-clima-final.csv'
+            output_path_final = '../../data/extracao/dados-clima-diario-final.csv'
             df_final.to_csv(output_path_final, index=False, sep=';')
             print(f"Arquivo final gerado com sucesso: {output_path_final}")
         else:

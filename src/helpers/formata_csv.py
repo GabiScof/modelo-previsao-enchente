@@ -1,3 +1,4 @@
+from typing import Union
 import pandas as pd
 import unicodedata
 from pandas import DataFrame
@@ -9,6 +10,7 @@ class formataCSV:
         df['data'] = pd.to_datetime(df['data'], format='%Y-%m-%d', errors='coerce')
         df['ano'] = df['data'].dt.year
         df['mes'] = df['data'].dt.month
+        df['dia'] = df['data'].dt.day
 
         df.drop(columns=['data'], inplace=True)
 
@@ -29,6 +31,10 @@ class formataCSV:
 
     def agrupa_por_mes(self,df:DataFrame, coluna: str):
         df = df.groupby(['ano', 'mes', 'estacao'], as_index=False)[coluna].mean()
+        return df
+
+    def agrupa_por_media(self,df:DataFrame, coluna: Union[str, list[str]], condicao: list):
+        df = df.groupby(condicao, as_index=False)[coluna].mean()
         return df
 
     def merge_codigo_municipio(self,df_codigos:DataFrame, df_municipios: DataFrame):

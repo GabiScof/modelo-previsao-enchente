@@ -23,11 +23,11 @@ class formataCSVClima:
 
         return df
 
-    def agrupa_por_mes(self,df:DataFrame):
-        df.drop(columns=['dia'], inplace=True)
+    def agrupa_por_dia(self,df:DataFrame):
+        df = df.drop(columns=['Hora UTC', 'HORA (UTC)'], errors='ignore')
         colunas = df.columns.tolist()
-        colunas = [col for col in colunas if col not in ['ano', 'mes', 'estado', 'municipio']]
-        df = df.groupby(['ano', 'mes', 'estado', 'municipio'], as_index=False)[colunas].mean(numeric_only=True)
+        colunas = [col for col in colunas if col not in ['ano', 'mes','dia', 'estado', 'municipio']]
+        df = df.groupby(['ano', 'mes', 'dia', 'estado', 'municipio'], as_index=False)[colunas].mean(numeric_only=True)
         return df
 
     def remover_valores_invalidos(self, df: DataFrame, coluna: str):
