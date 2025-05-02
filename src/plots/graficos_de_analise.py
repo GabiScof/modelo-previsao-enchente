@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import dataframe_image as dfi
 from geobr import read_municipality
 import geopandas as gpd
-
+from unidecode import unidecode
 
 # Pastas
 pasta_entrada = '../../data/pre-processados/completo'
